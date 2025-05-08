@@ -34,7 +34,7 @@ function WebServer()
 	oServer:SetSSL( .T. )
 	oServer:bInit:={|hInfo| ShowInfo( hInfo ) }	
 	
-	oServer:SetDirFiles( 'data' )
+	
 	
 	//	Routing...			
 

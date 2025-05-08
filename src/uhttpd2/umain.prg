@@ -68,7 +68,7 @@ REQUEST __vmCountThreads
   HTTP Made Really Easy (http://www.jmarshall.com/easy/http/)
 */
 
-#define HTTPD2_VERSION     '2.3b'
+#define HTTPD2_VERSION     '2.4'
 
 #define THREAD_COUNT_PREALLOC     10
 #define THREAD_COUNT_MAX         200
@@ -135,6 +135,8 @@ CLASS UHttpd2 MODULE FRIENDLY
    METHOD SetFolderPublic( cFolder )
    METHOD SetCertificate( PrivateKeyFilename, CertificateFilename )
    METHOD SetErrorStatus( nStatus, cPage, cAjax )
+   METHOD SetFirewallFilter( uIPs, cFirewallType )
+   
 
 
    METHOD Statistics()
@@ -211,6 +213,7 @@ CLASS UHttpd2 MODULE FRIENDLY
 // DATA aSession
 
    DATA lStop
+   DATA lFirewallType 			INIT 'blacklist'	//	'whitelist'
 
    METHOD LogAccess()
    METHOD LogError( cError )
@@ -280,6 +283,40 @@ METHOD SetCertificate( PrivateKeyFilename, CertificateFilename ) CLASS UHttpd2
    ::aConfig[ 'CertificateFilename' ]  := CertificateFilename
 
    RETU NIL
+   
+METHOD SetFirewallFilter( uFilter, cFirewallType ) CLASS UHttpd2
+
+   LOCAL cIps := ''
+   LOCAL nLen, nI   
+   
+   hb_default( @cFirewallType, 'blacklist' )
+   
+   cFirewallType := lower( cFirewallType )
+   
+   IF cFirewallType == 'blacklist' .OR. cFirewallType == 'whitelist'
+	  ::lFirewallType := lower( cFirewallType )
+   ENDIF
+   
+   DO CASE 
+   
+      CASE Valtype( uFilter ) == 'C' 
+	  
+  	    ::aConfig[ 'FirewallFilter' ]  := uFilter
+		
+      CASE Valtype( uFilter ) == 'A' 
+	  
+		nLen := len( uFilter ) - 1
+		
+		FOR nI := 1 TO nLen 
+			cIps += uFilter[ nI ] + ' ' 
+		NEXT
+		
+		cIps += uFilter[ nI ]
+
+		::aConfig[ 'FirewallFilter' ]  := cIps
+   ENDCASE               
+   
+   RETU NIL 
 
 METHOD SetErrorStatus( nStatus, cPage, cAjax ) CLASS UHttpd2
 
@@ -417,7 +454,7 @@ METHOD Run( aConfig ) CLASS UHttpd2
    LOCAL hSocket, nI, aI, xValue, aThreads, nJobs, nWorkers
    
 
-   hb_default( @aConfig, {} )
+   hb_default( @aConfig, {=>} )
 
    IF ! hb_mtvm()
       Self:cError := "Multithread support required"
@@ -931,7 +968,7 @@ STATIC FUNCTION MY_SSL_ACCEPT( hSSL, hSocket, nTimeout )
 STATIC FUNC ProcessConnection( oServer )
 
    LOCAL hSocket, cRequest, aI, nLen, nErr, nTime, nReqLen, cBuf, aServer
-   LOCAL aMount, cMount, aMethods, lPassMethod, n, nRoutes, aPair, aRoute, aMatch, cMethod
+   LOCAL aMount, cMount, aMethods, lPassMethod, n, nRoutes, aPair, aRoute, aMatch, cMethod, nIPBin
 #ifndef NO_SSL
    LOCAL hSSL
 #endif
@@ -966,14 +1003,41 @@ STATIC FUNC ProcessConnection( oServer )
 
 
       /* Firewall */
-      nLen := IPAddr2Num( aServer[ "REMOTE_ADDR" ] )
-      hb_HHasKey( oServer:aFirewallFilter, nLen, @nErr )
-      IF nErr > 0 .AND. nLen <= hb_HValueAt( oServer:aFirewallFilter, nErr )
-         oServer:Dbg( "Firewall denied", aServer[ "REMOTE_ADDR" ] )
-         hb_socketShutdown( hSocket )
-         hb_socketClose( hSocket )
-         LOOP
-      ENDIF
+      nIpBin := IPAddr2Num( aServer[ "REMOTE_ADDR" ] )
+	  
+	  DO CASE 
+	  
+		CASE oServer:lFirewallType == 'blacklist' 
+		
+			hb_HHasKey( oServer:aFirewallFilter, nIpBin, @nErr )
+			
+			IF nErr > 0 .AND. nIpBin <= hb_HValueAt( oServer:aFirewallFilter, nErr )
+				oServer:Dbg( "Firewall denied (blacklist)", aServer[ "REMOTE_ADDR" ] )
+				hb_socketShutdown( hSocket )
+				hb_socketClose( hSocket )
+				LOOP
+			ENDIF
+			
+		CASE oServer:lFirewallType == 'whitelist' 
+		
+			hb_HHasKey( oServer:aFirewallFilter, nIpBin, @nErr )
+			
+			IF nErr > 0 .AND. nIpBin <= hb_HValueAt( oServer:aFirewallFilter, nErr )
+			
+				//	WhiteList => IP OK
+				
+			ELSE
+				oServer:Dbg( "Firewall denied (whitelist)", aServer[ "REMOTE_ADDR" ] )
+				hb_socketShutdown( hSocket )
+				hb_socketClose( hSocket )
+				LOOP
+			ENDIF		
+		
+		OTHERWISE 
+			hb_socketShutdown( hSocket )
+			hb_socketClose( hSocket )	
+			LOOP 
+	  ENDCASE
 
 #ifndef NO_SSL
       IF oServer:aConfig[ "SSL" ]
