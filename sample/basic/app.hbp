@@ -30,4 +30,4 @@ app\myapi.prg
 
 {msvc64}-ldflag=/NODEFAULTLIB:libucrt
 {msvc64}-ldflag=/NODEFAULTLIB:msvcrt
--lucrt
+{msvc64}-lucrt
