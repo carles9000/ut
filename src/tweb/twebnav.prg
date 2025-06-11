@@ -463,15 +463,16 @@ METHOD DrawMenuItem() CLASS TWebNav
 				cHtml += if( oItem[ 'active'], 'sidebar-item-active', '') + '" '
 
 				if !empty( oItem[ 'action' ] )
+			
 					if At( '(', oItem[ 'action' ] ) > 0
-						cHtml += 'href="#" onclick="' + oItem[ 'action' ] + '" '
+						cHtml += 'href="#" onclick="' + oItem[ 'action' ] + '" >'
 					else
-						cHtml += 'href="' + oItem[ 'action' ] + '" '
+						cHtml += 'href="' + oItem[ 'action' ] + '" >'
 					endif
 				else
 					cHtml += ' href="' + oItem[ 'link' ] + '" >' + CRLF 
-				endif
-				
+				endif				
+			
 				if !empty( oItem[ 'icon' ] )
 					cHtml += '      ' + oItem[ 'icon' ] + '&nbsp;' 
 				endif
