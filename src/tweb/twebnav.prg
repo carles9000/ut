@@ -202,7 +202,7 @@ METHOD DrawMenuNav() CLASS TWebNav
 	for n := 1 to nLen 	
 	
 		oItem := ::aMenuNav[n]
-	
+
 		do case		
 			
 			case oItem[ 'navitem' ] .and. !oItem[ 'menu' ] .and. ! oItem[ 'close' ]	//	NavItem
@@ -227,7 +227,7 @@ METHOD DrawMenuNav() CLASS TWebNav
 				
 				cHtml += '">' + CRLF
 				cHtml += '  <a class="nav-link" ' 
-				
+			
 					if !empty( oItem[ 'action' ] )
 						if At( '(', oItem[ 'action' ] ) > 0
 							cHtml += 'href="#" onclick="' + oItem[ 'action' ] + '" '
@@ -461,8 +461,16 @@ METHOD DrawMenuItem() CLASS TWebNav
 				
 				
 				cHtml += if( oItem[ 'active'], 'sidebar-item-active', '') + '" '
-				
-				cHtml += ' href="' + oItem[ 'link' ] + '" >' + CRLF 
+
+				if !empty( oItem[ 'action' ] )
+					if At( '(', oItem[ 'action' ] ) > 0
+						cHtml += 'href="#" onclick="' + oItem[ 'action' ] + '" '
+					else
+						cHtml += 'href="' + oItem[ 'action' ] + '" '
+					endif
+				else
+					cHtml += ' href="' + oItem[ 'link' ] + '" >' + CRLF 
+				endif
 				
 				if !empty( oItem[ 'icon' ] )
 					cHtml += '      ' + oItem[ 'icon' ] + '&nbsp;' 

@@ -6,14 +6,13 @@
 ** MIT license https://github.com/carles9000/tweb.uhttpd2/blob/master/LICENSE
 */
 
-#define TWEB_VERSION    '1.4'
+#define TWEB_VERSION    '1.4a'
 
 #include 'hbclass.ch'
 #include 'common.ch'
 #include 'error.ch'
 
 // ----------------------------------------------------------
-
 
 #define CRLF      Chr(13)+Chr(10)
 

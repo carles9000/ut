@@ -270,13 +270,13 @@
 #xcommand ENDMENU GROUP OF <oNav>  					=> <oNav>:AddMenuItem( nil    , nil, nil      , nil, .t., .t., .t. )
 #xcommand ENDMENU OF <oNav>  						=> <oNav>:AddMenuItem( nil    , nil, nil      , nil, .t., .t., .f. )
 
-#xcommand MENUITEM <cItem> [ ICON <cIcon> ] [ ROUTE <cRoute> ] [ <ac: ACTIVE>  ] [ CONFIRM <cConfirm>] OF <oNav>  ;
+#xcommand MENUITEM <cItem> [ ICON <cIcon> ] [ ROUTE <cRoute> ] [ ACTION <cAction> ] [ <ac: ACTIVE>  ] [ CONFIRM <cConfirm>] OF <oNav>  ;
 => ;
-	<oNav>:AddMenuItem( <cItem>, [<cRoute>], [<cIcon>], nil   , .f.  , .f.     , .f.   ,.f.        ,[<.ac.>], [<cConfirm>], .t.      , .f.    )
+	<oNav>:AddMenuItem( <cItem>, [<cRoute>], [<cIcon>], [<cAction>], .f.  , .f.     , .f.   ,.f.        ,[<.ac.>], [<cConfirm>], .t.      , .f.    )
 	
-#xcommand MENUITEM <cItem> [ ICON <cIcon> ] [ ROUTE <cRoute> ] [ ACTIVE <lActive>  ] [ CONFIRM <cConfirm>] OF <oNav>  ;
+#xcommand MENUITEM <cItem> [ ICON <cIcon> ] [ ROUTE <cRoute> ] [ ACTION <cAction> ] [ ACTIVE <lActive>  ] [ CONFIRM <cConfirm>] OF <oNav>  ;
 => ;
-	<oNav>:AddMenuItem( <cItem>, [<cRoute>], [<cIcon>], nil   , .f.  , .f.     , .f.   ,.f.        ,[<lActive>], [<cConfirm>], .t.   , .f.    )
+	<oNav>:AddMenuItem( <cItem>, [<cRoute>], [<cIcon>], [<cAction>], .f.  , .f.     , .f.   ,.f.        ,[<lActive>], [<cConfirm>], .t.   , .f.    )
 
 
 #xcommand MENUITEM HEADER <cItem> OF <oNav> => <oNav>:AddMenuItemHeader( <cItem> )
