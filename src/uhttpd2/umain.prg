@@ -68,7 +68,7 @@ REQUEST __vmCountThreads
   HTTP Made Really Easy (http://www.jmarshall.com/easy/http/)
 */
 
-#define HTTPD2_VERSION     '2.4'
+#define HTTPD2_VERSION     '2.4a'
 
 #define THREAD_COUNT_PREALLOC     10
 #define THREAD_COUNT_MAX         200
@@ -990,11 +990,13 @@ STATIC FUNC ProcessConnection( oServer )
        because request handler script can ruin variable value */
       aServer := { => }
       aServer[ "HTTPS" ] := oServer:aConfig[ "SSL" ]
+	  
       IF ! Empty( aI := hb_socketGetPeerName( hSocket ) )
          aServer[ "REMOTE_ADDR" ] := aI[ 2 ]
          aServer[ "REMOTE_HOST" ] := aServer[ "REMOTE_ADDR" ]  // no reverse DNS
          aServer[ "REMOTE_PORT" ] := aI[ 3 ]
-      ENDIF
+      ENDIF	  
+	  
       IF ! Empty( aI := hb_socketGetSockName( hSocket ) )
          aServer[ "SERVER_ADDR" ] := aI[ 2 ]
          aServer[ "SERVER_PORT" ] := aI[ 3 ]
@@ -1777,6 +1779,7 @@ STATIC FUNCTION ParseRequestHeader( cRequest )
    aLine := hb_ATokens( aRequest[ 1 ], " " )
 
    server[ "REQUEST_ALL" ] := aRequest[ 1 ]
+   
    IF Len( aLine ) == 3 .AND. Left( aLine[ 3 ], 5 ) == "HTTP/"
       server[ "REQUEST_METHOD" ] := aLine[ 1 ]
       server[ "REQUEST_URI" ] := aLine[ 2 ]
@@ -1845,6 +1848,7 @@ STATIC FUNCTION ParseRequestHeader( cRequest )
          ENDSWITCH
       ENDIF
    NEXT
+   
    IF !( server[ "QUERY_STRING" ] == "" )
       FOR EACH cI IN hb_ATokens( server[ "QUERY_STRING" ], "&" )
          IF ( nI := At( "=", cI ) ) > 0
@@ -1854,6 +1858,10 @@ STATIC FUNCTION ParseRequestHeader( cRequest )
          ENDIF
       NEXT
    ENDIF
+   
+	/* Check IP Real, for si use invers proxy... */
+	
+	server[ "REMOTE_ADDR" ] := UGetIpClient( server )	       
 
    RETURN nContentLength
 
@@ -3891,3 +3899,67 @@ iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAACKJJREFUeF7tm3Ws
     ENDTEXT 
 
     RETU cImg 
+
+// --------------------------------------------- //
+// Recover IP Real
+// Xec for invers proxy, cloudfare,...
+// --------------------------------------------- //
+
+STATIC FUNCTION UGetIpClient( hServer )
+
+    local aIP 	:= {;
+					'HTTP_X_FORWARDED_FOR',;
+					'HTTP_X_REAL_IP',;
+					'HTTP_CLIENT_IP',;
+					'HTTP_CF_CONNECTING_IP',;		//	Cloudflare header
+					'REMOTE_ADDR';
+				}
+				
+	local nLen := len( aIP )
+	local nI, cValue, aForward, cKey, cIp 
+	
+	for nI := 1 to nLen 
+	
+		cKey := aIP[ nI ]
+	
+		if HB_HHasKey( hServer, cKey )
+		
+			cValue := hServer[ cKey ]
+			
+			if cKey == 'HTTP_X_FORWARDED_FOR'
+				aForward := hb_ATokens( cValue, " " )
+				
+				if valtype( aForward ) == 'A' .and. len( aForward ) > 0 
+					cIp := aForward[1]
+				endif
+				
+			else 
+				cIP := cValue 
+			endif	
+
+			if UValidIP( cIP )
+				retu cIp 
+			endif 
+		
+		endif 	
+		
+	next 
+	
+retu '127.0.0.1'
+	
+// --------------------------------------------- //
+
+FUNCTION UValidIP(cIP)
+
+	LOCAL lValid := .F.
+	LOCAL cPatron
+
+	// Patrón de expresión regular para validar IP (IPv4)
+	// Formato: xxx.xxx.xxx.xxx donde xxx va de 0 a 255
+	cPatron = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+
+	IF HB_RegExMatch(cPatron, ALLTRIM(cIP))
+		lValid := .T.
+	ENDIF
+
+RETURN lValid

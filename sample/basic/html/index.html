@@ -12,7 +12,9 @@
 			SAY VALUE '<h4>Harbour compiler {{ HB_COMPILER() }}' ALIGN 'center' GRID 12  OF o									
 			SAY VALUE '<h4>Version {{ Version() }}' ALIGN 'center' GRID 12  OF o									
 			SAY VALUE '<h4>Version UT {{ UVersion() }}' ALIGN 'center' GRID 12  OF o									
-			SAY VALUE '<h4>Version TWeb {{ TWebVersion() }}<hr>' ALIGN 'center' GRID 12  OF o									
+			SAY VALUE '<h4>Version TWeb {{ TWebVersion() }}' ALIGN 'center' GRID 12  OF o									
+			SAY VALUE '<h4>Client IP {{ UGetIP() }}' ALIGN 'center' GRID 12  OF o									
+			SAY VALUE '<h5>Now {{ Time() }}<hr>' ALIGN 'center' GRID 12  OF o									
 			
 			BUTTON ID 'btn' LABEL 'Click me!' ALIGN 'center' GRID 12 ACTION 'clickme' OF o
 		ENDFORM o			

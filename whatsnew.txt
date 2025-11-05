@@ -1,3 +1,7 @@
+Vrs. 2.4a
+=========
+* UGetIp() Resolve IP Real
+
 Vrs. 2.3b
 =========
 * Add UDataKeppAlive( <bInit> ) Allows you to retrieve previously used variables during a keep-alive connection.
