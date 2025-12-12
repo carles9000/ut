@@ -4,7 +4,7 @@
 STATIC nSessions_Executed := 1
 STATIC hmtxSession
 
-THREAD STATIC oSession
+THREAD STATIC oSession 
 
 // ---------------------------------------------------------------------- //
 
@@ -128,8 +128,7 @@ FUNCTION UGetSession()
 // hInfo[ 'seed' ]   := oSession:cSeed
 
       hInfo[ 'duration' ]  := oSession:nDuration
-      hInfo[ 'expired' ]  := oSession:hSession[ 'expired' ]
-      hInfo[ 'ip' ]   := oSession:hSession[ 'ip' ]
+      hInfo[ 'expired' ]  := oSession:hSession[ 'expired' ]    
       hInfo[ 'sid' ]   := oSession:hSession[ 'sid' ]
 // hInfo[ 'sid' ]    := oSession:cSID
       hInfo[ 'garbage' ]   := oSession:nGarbage
@@ -290,13 +289,12 @@ METHOD Validate() CLASS USessions
 
 // Validaremos estructura
 
-      IF (  hb_HHasKey( ::hSession, 'ip'    ) .AND. ;
-            hb_HHasKey( ::hSession, 'sid'   ) .AND. ;
-            hb_HHasKey( ::hSession, 'expired' ) .AND. ;
-            hb_HHasKey( ::hSession, 'data'  ) )
 
-         IF  ::hSession[ 'expired' ] >= Seconds()  .AND. ;
-               ::hSession[ 'ip' ] == UGetIp()
+      IF (  hb_HHasKey( ::hSession, 'sid'   ) .AND. ;
+            hb_HHasKey( ::hSession, 'expired' ) .AND. ;
+            hb_HHasKey( ::hSession, 'data'  ) )                        
+			   
+         IF  ::hSession[ 'expired' ] >= Seconds() 
 
             lValidate  := .T.
 
@@ -316,7 +314,7 @@ METHOD InitData( cSID ) CLASS USessions
 
    ::hSession := { => }
 
-   ::hSession[ 'ip'     ] := UGetIp()   // La Ip no es fiable. Pueden usar proxy
+
    ::hSession[ 'sid'    ] := cSID
    ::hSession[ 'expired' ] := Seconds() + ::nDuration
    ::hSession[ 'data'   ] := { => }
